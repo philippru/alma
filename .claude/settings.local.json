@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view:*)",
+      "Bash(docker compose:*)",
+      "Bash(xargs grep:*)",
+      "Bash(curl:*)",
+      "Bash(docker exec:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(wmic logicaldisk get caption,description,drivetype,volumename)",
+      "Bash(powershell -command \"Get-PSDrive -PSProvider FileSystem | Select-Object Name,Root,Description,@{N=''Free\\(GB\\)'';E={[math]::Round\\($_Free/1GB,1\\)}},@{N=''Used\\(GB\\)'';E={[math]::Round\\(\\($_Used\\)/1GB,1\\)}} | Format-Table -AutoSize\")",
+      "Bash(docker build --target production -t alma-frontend-prod:latest frontend/)"
+    ]
+  }
+}

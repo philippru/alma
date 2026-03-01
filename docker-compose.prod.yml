@@ -1,0 +1,60 @@
+services:
+  # ──────────────────────────────────────────
+  # PostgreSQL
+  # ──────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: alma_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-alma}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-alma}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Kein Port-Mapping nach außen (DB nur intern erreichbar)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alma}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────
+  # FastAPI Backend
+  # ──────────────────────────────────────────
+  backend:
+    image: alma-backend:latest
+    container_name: alma_backend
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-alma}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-alma}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      SECRET_KEY: ${SECRET_KEY}
+      ENVIRONMENT: production
+      CORS_ORIGINS: '["http://localhost", "http://localhost:80"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploaded_files:/app/uploads
+      - ./exports:/app/exports
+
+  # ──────────────────────────────────────────
+  # React Frontend (nginx, statisch gebaut)
+  # ──────────────────────────────────────────
+  frontend:
+    image: alma-frontend-prod:latest
+    container_name: alma_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  uploaded_files:
