@@ -77,6 +77,9 @@ export const studioApi = {
 
   getSessionHl7Url: (sessionId: string, fmt: string) =>
     `${API_BASE}/api/v1/studio/sessions/${sessionId}/hl7/${fmt}`,
+
+  validateApiKey: () =>
+    api.get('/studio/validate-api-key').then(r => r.data),
 }
 
 // ── Player API ────────────────────────────────────────────────────────────────

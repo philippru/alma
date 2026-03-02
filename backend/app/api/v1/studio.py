@@ -428,6 +428,32 @@ Benutzeranfrage: {message}"""
 
 
 # ──────────────────────────────────────────
+# API Key Validation
+# ──────────────────────────────────────────
+
+@router.get("/validate-api-key")
+async def validate_api_key():
+    """
+    Test whether the configured Anthropic API key is valid by making a minimal
+    API call. Returns {"valid": true/false, "provider": "anthropic"}.
+    """
+    if not settings.anthropic_api_key:
+        return {"valid": False, "provider": "anthropic", "detail": "No API key configured"}
+
+    try:
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+        await client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=1,
+            messages=[{"role": "user", "content": "hi"}],
+        )
+        return {"valid": True, "provider": "anthropic"}
+    except Exception as exc:
+        return {"valid": False, "provider": "anthropic", "detail": str(exc)}
+
+
+# ──────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────
 
